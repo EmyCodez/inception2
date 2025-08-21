@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./requirements/nginx/Dockerfile
+    image: nginx:v1.0
+    container_name: nginx
+    env_file:
+      - ./.env
+    volumes:
+      - wordpress:/var/www/html/wordpress
+    ports:
+      - "443:443"          
+    networks:
+      - inception
+    depends_on:
+      - wordpress
+    restart: always
+
+  wordpress:
+    build:
+      context: .
+      dockerfile: ./requirements/wordpress/Dockerfile
+    image: wordpress:v1.0
+    container_name: wordpress
+    env_file:
+      - ./.env
+    volumes:
+      - wordpress:/var/www/html/wordpress
+    expose:
+      - "9000"            
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+    restart: always
+
+  mariadb:
+    build:
+      context: .
+      dockerfile: ./requirements/mariadb/Dockerfile
+    image: mariadb:v1.0
+    container_name: mariadb
+    env_file:
+      - ./.env
+    volumes:
+      - mariadb:/var/lib/mysql
+    expose:
+      - "3306"            
+    networks:
+      - inception
+    restart: always
+
+networks:
+  inception:
+
+volumes:
+  wordpress:
+    name: wordpress
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: /home/esimpson/data/wordpress
+
+  mariadb:
+    name: mariadb
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: /home/esimpson/data/mariadb
